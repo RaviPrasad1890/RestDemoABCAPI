@@ -65,7 +65,8 @@ public class CustomerController {
 		Customer cust=customerRepository.findOne(customerId);
 		Token tokenGenerated=null;
 		if(cust==null) {
-			return tokenGenerated;
+			//return tokenGenerated;
+			throw new NullPointerException();
 		}
 		List<Token> listOfTokensAssignedToCustomer= tokenRepository.findByCustomerId(customerId);
 		//If active token exists, then return active token details
@@ -96,18 +97,21 @@ public class CustomerController {
 	}
 		
 	@PutMapping(path="/customer/{customerId}/token/{tokenId}/counter")
-	public Counter assignCounterToToken(@PathVariable int customerId,@PathVariable int tokenId) {
+	public Counter assignCounterToToken(@PathVariable int customerId,@PathVariable int tokenId) throws CustomException {
 		Counter counter=null;
 		Customer customer=customerRepository.findOne(customerId);
 		if(tokenRepository.findOne(tokenId)==null) {
-			return counter;
+			//return counter;
+			throw new CustomException("Token Doesn't Exisit");
 		}
 		
 		if(customer==null) {
-			return counter;
+			//return counter;
+			throw new CustomException("Customer Doesn't Exisit");
 		}
 		if(tokenRepository.findOne(tokenId).getCustomerId()!=customerId) {
-			return counter;
+			//return counter;
+			throw new NullPointerException();
 		}
 		
 		if(customer.isPrimaryCustomer()) {
@@ -141,7 +145,7 @@ public class CustomerController {
 		 return counterRepository.save(counter);
 		}else {
 			//All counters are occupied, please wait
-			return counter;
+			throw new CustomException("No data Found");
 		}
 	}
 
@@ -152,10 +156,10 @@ public class CustomerController {
 	}
 		
 	@PutMapping(path="/customer/token/counter/{counterId}")
-	public Counter markTokenCompleteOfCounter(@PathVariable int counterId) {
+	public Counter markTokenCompleteOfCounter(@PathVariable int counterId) throws CustomException {
 		Counter counter=counterRepository.findOne(counterId);
 		if(counter==null) {
-			return null;
+			throw new CustomException("No data Found");
 		}
 		
 		int tokenNumber=counter.getTokenNumber();
