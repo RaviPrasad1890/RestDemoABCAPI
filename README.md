@@ -26,6 +26,12 @@ prime customers only.
 >>PATH= "/customer" ,Type= GET
 To get all customers details. 
 
+>>PATH= "/customer/token" ,Type= GET
+To get all token details. 
+
+>>PATH= "/customer/token/counter" ,Type= GET
+To get all counter details. 
+
 >>PATH= "/customer/{customerId}", Type= GET
 To get specific customer details
 
@@ -38,14 +44,11 @@ BODY:
 }
 
 
->>PATH="/customer/token", Type: GET
-To get all token details
+
 
 >>PATH="/customer/{customerId}/token", Type:POST
 To generate a token for customer
 
->>PATH="/customer/{customerId}/token/{tokenId}", Type=GET
-To get counter details assigned to token.
 
 >>PATH="/customer/{customerId}/token/{tokenId}/counter", Type=PUT
 To assign a specific token to a counter.
@@ -56,7 +59,7 @@ If all counters will have active tokens assigned to them, then token will not be
 >>PATH="/customer/counter" Type: GET
 To get all counter details and observe token status currently assigned to those counter.
 
->>PATH="/customer/token/counter/{counterId}" Type:PUT
+>>PATH="/customer/token/{tokenId}" Type:PUT
 To mark a token status complete of a specific counter.
 Note: Only admin can mark a token complete.
 
