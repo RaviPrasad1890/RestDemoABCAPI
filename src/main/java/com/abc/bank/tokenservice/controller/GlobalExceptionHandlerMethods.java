@@ -13,18 +13,16 @@ public class GlobalExceptionHandlerMethods {
 	
 	@ExceptionHandler(value=CustomException.class)
 	public String handlingCustomException(Exception e) {
-		//Logging Null Pointer Exception 
-		System.out.println("Null Pointer Exception");
-		logger.info("Exception "+e.getLocalizedMessage());
+		logger.info("Custom Exception "+e.getLocalizedMessage());
 		return e.getLocalizedMessage();
 	}
 	
 	
-	@ExceptionHandler(value=NullPointerException.class)
-	public String handlingNullPointerException(Exception e) {
-		//Logging Null Pointer Exception 
-		logger.info("Exception "+e.getLocalizedMessage());
-		return "Data Not Found";
-	}
+	/*
+	 * @ExceptionHandler(value=NullPointerException.class) public String
+	 * handlingNullPointerException(Exception e) { //Logging Null Pointer Exception
+	 * logger.info("Null Pointer Exception "+e.getLocalizedMessage()); return
+	 * e.getLocalizedMessage(); }
+	 */
 
 }

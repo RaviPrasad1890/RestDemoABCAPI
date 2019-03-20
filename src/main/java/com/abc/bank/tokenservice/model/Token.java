@@ -4,6 +4,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 
 
 @Entity
@@ -12,58 +14,69 @@ public class Token {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	private int tokenNumber;
-	private boolean isActive;
-	private int customerId;
-	private boolean isPrimaryToken;
+	
+	private boolean tokenActive;
+	
+	@OneToOne
+	@JoinColumn
+	private Customer customer;
+	
+	@OneToOne(mappedBy="token")
+	private Counter counter;
+	
+	
+	
 	
 	private Token() {}
 
 
-	public Token(boolean isActive, int customerId,boolean isPrimaryToken) {		
-		this.isActive = isActive;
-		this.customerId = customerId;
-		this.isPrimaryToken = isPrimaryToken;
+	public Token(boolean tokenActive,Customer customer) {
+		this.tokenActive = tokenActive;
+		this.customer = customer;
 	}
-
-
+	
+	public Token(boolean tokenActive, Counter counter) {
+		this.tokenActive = tokenActive;
+		this.counter = counter;
+	}
 
 
 	public int getTokenNumber() {
 		return tokenNumber;
 	}
 
+
 	public void setTokenNumber(int tokenNumber) {
 		this.tokenNumber = tokenNumber;
 	}
 
-	public boolean isActive() {
-		return isActive;
-	}
 
-	public void setActive(boolean isActive) {
-		this.isActive = isActive;
+	public boolean isTokenActive() {
+		return tokenActive;
 	}
 
 
-	public int getCustomerId() {
-		return customerId;
+	public void setTokenActive(boolean tokenActive) {
+		this.tokenActive = tokenActive;
 	}
 
-
-	public void setCustomerId(int customerId) {
-		this.customerId = customerId;
-	}
-
-
-	public boolean isPrimaryToken() {
-		return isPrimaryToken;
-	}
-
-
-	public void setPrimaryToken(boolean isPrimaryToken) {
-		this.isPrimaryToken = isPrimaryToken;
-	}
 	
+	public Customer getCustomer() {
+		return customer;
+	}
+
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
+	}
+
+
+	/*
+	 * public Counter getCounter() { return counter; }
+	 * 
+	 * 
+	 * public void setCounter(Counter counter) { this.counter = counter; }
+	 */
 	
 	
 	

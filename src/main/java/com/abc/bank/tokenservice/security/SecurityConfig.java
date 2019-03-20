@@ -19,7 +19,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(HttpSecurity http) throws Exception {
 
 		http.httpBasic().and()
-		.authorizeRequests().antMatchers("/customer/token/counter/{counterId}")
+		.authorizeRequests().antMatchers("/customer/token/{tokenId}")
 		.hasRole("ADMIN")
 		.antMatchers("/customer/**").hasAnyRole("ADMIN","USER")
 		.and().csrf().disable()

@@ -34,141 +34,112 @@ public class CustomerController {
 	
 	@GetMapping(path="/customer")
 	public List<Customer> getAllCustomers() {
-		return (List<Customer>) customerRepository.findAll();
-	}
+		  return (List<Customer>) customerRepository.findAll(); 
+		}
+	 @PostMapping(path="/customer") 
+	 public ResponseEntity<Void> addCustomer(@RequestBody Customer customer){ 
+		 Customer savedCustomer=
+				 customerRepository.save(customer); URI location = ServletUriComponentsBuilder
+				 .fromCurrentRequest() .path("/{id}")
+				 .buildAndExpand(savedCustomer.getCustomerId()).toUri();
+				 return ResponseEntity.created(location).build(); 
+	 }
+	 
+	  @GetMapping(path="/customer/{customerId}") 
+	  public Customer getCustomer(@PathVariable int customerId) throws CustomException { 
+		  Customer customer=null; 
+		  customer= customerRepository.findOne(customerId);
+		  if(customer!=null) {
+			  return customer;
+		  }else {
+			  throw new CustomException("Customer Does Not Exists");
+		  }
+		 
+	 }
 	
-	@GetMapping(path="/customer/{id}")
-	public Customer getCustomer(@PathVariable int id) {
-		Customer customer=null;
-		customer= customerRepository.findOne(id);
-		return customer;
-	}
-	
-	@PostMapping(path="/customer")
-	public ResponseEntity<Void> addCustomer(@RequestBody Customer customer){
-		Customer savedCustomer= customerRepository.save(customer);
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(savedCustomer.getCustomerId()).toUri();
-		return ResponseEntity.created(location).build();
-	}
-	
-
 	@GetMapping(path="/customer/token")
-	public List<Token> getAllToken(){
-		return (List<Token>) tokenRepository.findAll();
-	}
+	public List<Token> getAllTokens() {
+		  return (List<Token>) tokenRepository.findAll(); 
+		}
 	
-	@PostMapping(path="/customer/{customerId}/token")
-	public Token generateToken(@PathVariable int customerId) {
-		Customer cust=customerRepository.findOne(customerId);
-		Token tokenGenerated=null;
-		if(cust==null) {
-			//return tokenGenerated;
-			throw new NullPointerException();
-		}
-		List<Token> listOfTokensAssignedToCustomer= tokenRepository.findByCustomerId(customerId);
-		//If active token exists, then return active token details
-		for (Token token : listOfTokensAssignedToCustomer) {
-			if(token.isActive()) {
-				return token;
-			}
-		}
-		boolean primaryToken=cust.isPrimaryCustomer();
-		tokenGenerated=new Token(true,customerId,primaryToken);		
-		tokenGenerated=tokenRepository.save(tokenGenerated);
-		return tokenGenerated;
-	}
-	
-	@GetMapping(path="/customer/{customerId}/token/{tokenId}")
-	public Counter getTokenCounter(@PathVariable int customerId,@PathVariable int tokenId) {
-		Token token = tokenRepository.findOne(tokenId);
-		Counter counter=null;
-		if(token!=null) {
-			 Counter assignedCounter=counterRepository.findByTokenNumber(tokenId);
-			
-			if(assignedCounter!=null) {
-				counter=assignedCounter;
-			}
-		}
-		return counter;
-		
-	}
-		
-	@PutMapping(path="/customer/{customerId}/token/{tokenId}/counter")
-	public Counter assignCounterToToken(@PathVariable int customerId,@PathVariable int tokenId) throws CustomException {
-		Counter counter=null;
-		Customer customer=customerRepository.findOne(customerId);
-		if(tokenRepository.findOne(tokenId)==null) {
-			//return counter;
-			throw new CustomException("Token Doesn't Exisit");
-		}
-		
-		if(customer==null) {
-			//return counter;
-			throw new CustomException("Customer Doesn't Exisit");
-		}
-		if(tokenRepository.findOne(tokenId).getCustomerId()!=customerId) {
-			//return counter;
-			throw new NullPointerException();
-		}
-		
-		if(customer.isPrimaryCustomer()) {
-			List<Counter> availableCountersForPrimaryCust=counterRepository.
-					findByPrimaryCounter(true);
-			for(Counter coun:availableCountersForPrimaryCust) {
-				int tokenNumber=coun.getTokenNumber();
-				Token token=tokenRepository.findOne(tokenNumber);
-				if(token==null||(!(token.isActive()))) {
-					coun.setTokenNumer(tokenId);
-					coun.setTokenActive(true);
-					counter=coun;
-					break;
-				}
-			}
-		}else {
-			List<Counter> availableCountersForSecondaryCust=counterRepository.
-					findByPrimaryCounter(false);
-			for(Counter coun:availableCountersForSecondaryCust) {
-				int tokenNumber=coun.getTokenNumber();
-				Token token=tokenRepository.findOne(tokenNumber);
-				if(token==null||(!(token.isActive()))) {
-					coun.setTokenNumer(tokenId);
-					coun.setTokenActive(true);
-					counter=coun;
-					break;
-				}
-			}
-		}
-		if(counter!=null) {
-		 return counterRepository.save(counter);
-		}else {
-			//All counters are occupied, please wait
-			throw new CustomException("No data Found");
-		}
-	}
-
-	@GetMapping(path="/customer/counter")
+	@GetMapping(path="/customer/token/counter")
 	public List<Counter> getAllCounters() {
-		
-		return (List<Counter>) counterRepository.findAll();
+		  return (List<Counter>) counterRepository.findAll(); 
+		}
+	
+	@PostMapping("/customer/{customerId}/token")
+	public Token generateToken(@PathVariable int customerId) throws CustomException {		
+		Customer customer=customerRepository.findOne(customerId);
+		if(customer==null) {
+			throw new CustomException("Customer Not Found");
+		}
+		Token token= new Token(true,customer);
+		return tokenRepository.save(token);
 	}
+	
+	@PutMapping("/customer/{customerId}/token/{tokenId}/counter")
+	public Counter assignTokenToCounter(@PathVariable int customerId,@PathVariable int tokenId) throws CustomException {
 		
-	@PutMapping(path="/customer/token/counter/{counterId}")
-	public Counter markTokenCompleteOfCounter(@PathVariable int counterId) throws CustomException {
-		Counter counter=counterRepository.findOne(counterId);
-		if(counter==null) {
-			throw new CustomException("No data Found");
+		Counter counterFinal=null;
+		
+		
+		Customer incomingCustomer=customerRepository.findOne(customerId);
+		Token incomingToken=tokenRepository.findOne(tokenId);
+		
+		if(incomingCustomer==null||incomingToken==null) {
+			throw new CustomException("Customer/Token not Found");
 		}
 		
-		int tokenNumber=counter.getTokenNumber();
-		Token token=tokenRepository.findOne(tokenNumber);
-		token.setActive(false);
-		tokenRepository.save(token);
+		if(incomingToken.getCustomer().getCustomerId()!=incomingCustomer.getCustomerId()) {
+			throw new CustomException("Customer Token relationship not found");
+		}
 		
-		counter.setTokenActive(false);
-		return counterRepository.save(counter);		
+		//Find list of all primary and non primary counters available
+		List<Counter> primaryCounterList= counterRepository.findByPrimaryCounter(true);
+		List<Counter> seconadryCounterList= counterRepository.findByPrimaryCounter(false);
+		
+		if(incomingCustomer.isPrimaryCustomer()) {
+			for (Counter counter : primaryCounterList) {
+				
+				Token tokenAlreadyAssigned= counter.getToken();
+				if(tokenAlreadyAssigned==null||(!tokenAlreadyAssigned.isTokenActive())) {
+					counterFinal=counter;
+					break;
+				}
+			}
+		}else {
+			for (Counter counter : seconadryCounterList) {
+				
+				Token tokenAlreadyAssigned= counter.getToken();
+				if(tokenAlreadyAssigned==null||(!tokenAlreadyAssigned.isTokenActive())) {
+					counterFinal=counter;
+					break;
+				}
+			}
+		}
+		
+		if(counterFinal!=null) {
+			counterFinal.setToken(incomingToken);
+			return counterRepository.save(counterFinal);
+		}else {
+			throw new CustomException("No Counter Available, All Counters are occupied, please try later, or mark active token complete!");
+		}
+		
 	}
+	
+	
+	//Below Method will mark a token assigned complete, and make counter available
+	  @PutMapping(path="/customer/token/{tokenId}") 
+	  public Token markTokenComplete(@PathVariable int tokenId) throws CustomException {
+		
+		  Token token=tokenRepository.findOne(tokenId);
+	       if(token==null) { 
+	    	   	throw new CustomException("Counter dies not exists"); 
+	    	   }
+ 
+	       token.setTokenActive(false);
+	       return tokenRepository.save(token);
+	     }
+
 	
 }
